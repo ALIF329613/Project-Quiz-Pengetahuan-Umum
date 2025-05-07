@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz Pengetahuan Umum</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: url('https://moondoggiesmusic.com/wp-content/uploads/2020/01/Contoh-Kompetensi-Inti.png') no-repeat center center fixed;
+      background-size: cover;
+      color: #000;
+      text-align: center;
+    }
+
+    h1, h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: #111;
+    }
+
+    input, button {
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 10px;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #6c5ce7;
+      color: #fff;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #start-screen, #quiz-screen, #end-screen, #add-question-screen, #auth-screen {
+      padding: 20px;
+      margin-top: 100px;
+    }
+
+    #timer {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      background: rgba(255,255,255,0.85);
+      color: #000;
+      padding: 10px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    #question-container {
+      font-size: 1.8rem;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 30px;
+      margin: 20px auto;
+      max-width: 80%;
+      border-radius: 20px;
+      color: #000;
+    }
+
+    #options-container button {
+      display: block;
+      width: 80%;
+      margin: 10px auto;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    #options-container button.selected {
+      background-color: blue;
+      color: white;
+    }
+
+    #player-name {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+
+    #final-score {
+      font-size: 2.5rem;
+      font-weight: bold;
+      background: rgba(255,255,255,0.95);
+      color: #000;
+      padding: 20px;
+      border-radius: 15px;
+    }
+
+    #info-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.2rem;
+      padding: 5px 15px;
+    }
+
+    .auth-option {
+      margin: 10px;
+    }
+
+    #add-question-screen input {
+      display: block;
+      margin: 10px auto;
+      width: 80%;
+    }
+  </style>
+</head>
+<body>
+
+<button id="info-btn">ℹ️ Info</button>
+
+<div id="auth-screen" class="hidden">
+  <h2>Masuk atau Daftar</h2>
+  <input type="text" id="username" placeholder="Nama Pengguna">
+  <br>
+  <input type="password" id="password" placeholder="Kata Sandi">
+  <br>
+  <button id="login-btn" class="auth-option">Login</button>
+  <button id="register-btn" class="auth-option">Daftar</button>
+  <br><br>
+  <button onclick="document.getElementById('auth-screen').classList.add('hidden')">Tutup</button>
+</div>
+
+<div id="start-screen">
+  <h1>Quiz Pengetahuan Umum</h1>
+  <input type="text" id="name-input" placeholder="Masukkan Nama Anda">
+  <br>
+  <button id="start-btn">Mulai Quiz</button>
+</div>
+
+<div id="quiz-screen" class="hidden">
+  <div id="player-name"></div>
+  <div id="timer">10</div>
+  <div id="question-container"></div>
+  <div id="options-container"></div>
+</div>
+
+<div id="end-screen" class="hidden">
+  <h2>Quiz Selesai!</h2>
+  <div id="final-score"></div>
+  <button id="restart-btn">Ulangi Quiz</button>
+  <button id="add-question-btn">Tambah Pertanyaan</button>
+</div>
+
+<div id="add-question-screen" class="hidden">
+  <h2>Tambah Pertanyaan Baru</h2>
+  <input type="text" id="new-question" placeholder="Tulis pertanyaan">
+  <input type="text" id="new-option1" placeholder="Pilihan 1">
+  <input type="text" id="new-option2" placeholder="Pilihan 2">
+  <input type="text" id="new-option3" placeholder="Pilihan 3">
+  <input type="text" id="new-option4" placeholder="Pilihan 4">
+  <input type="text" id="new-answer" placeholder="Jawaban Benar">
+  <button id="save-question-btn">Simpan Pertanyaan</button>
+  <br><br>
+  <button onclick="location.reload()">Kembali ke Quiz</button>
+</div>
+
+<audio id="click-sound" src="https://cdn.pixabay.com/audio/2022/03/09/audio_7c1a1f8f2c.mp3" preload="auto"></audio>
+
+<script>
+let questions = [
+  { question: "Ibu kota Indonesia adalah?", options: ["Bandung", "Surabaya", "Jakarta", "Medan"], answer: "Jakarta" },
+  { question: "Planet terbesar di tata surya?", options: ["Mars", "Jupiter", "Bumi", "Saturnus"], answer: "Jupiter" },
+  { question: "Siapa presiden pertama Indonesia?", options: ["Soekarno", "Soeharto", "Jokowi", "Habibie"], answer: "Soekarno" },
+  { question: "Lambang negara Indonesia adalah?", options: ["Singa", "Elang", "Garuda", "Macan"], answer: "Garuda" },
+  { question: "Benua terbesar di dunia?", options: ["Afrika", "Asia", "Amerika", "Eropa"], answer: "Asia" },
+  { question: "Simbol kimia air adalah?", options: ["O2", "H2O", "CO2", "NaCl"], answer: "H2O" },
+  { question: "Gunung tertinggi di dunia?", options: ["Everest", "Kilimanjaro", "Merapi", "Fuji"], answer: "Everest" },
+  { question: "Seni melukis di dinding gua disebut?", options: ["Grafiti", "Mural", "Mozaik", "Fresco"], answer: "Mural" },
+  { question: "Jumlah warna dalam pelangi?", options: ["5", "6", "7", "8"], answer: "7" },
+  { question: "Hewan tercepat di darat?", options: ["Kuda", "Singa", "Cheetah", "Gazelle"], answer: "Cheetah" }
+];
+
+let currentQuestionIndex = 0;
+let score = 0;
+let timer;
+let timeLeft = 10;
+let playerName = '';
+let loggedIn = false;
+
+const nameInput = document.getElementById('name-input');
+const startBtn = document.getElementById('start-btn');
+const restartBtn = document.getElementById('restart-btn');
+const playerNameElement = document.getElementById('player-name');
+const timerElement = document.getElementById('timer');
+const questionContainer = document.getElementById('question-container');
+const optionsContainer = document.getElementById('options-container');
+const finalScore = document.getElementById('final-score');
+const clickSound = document.getElementById('click-sound');
+
+startBtn.addEventListener('click', startQuiz);
+restartBtn.addEventListener('click', () => location.reload());
+document.getElementById('info-btn').addEventListener('click', () => {
+  document.getElementById('auth-screen').classList.toggle('hidden');
+});
+document.getElementById('login-btn').addEventListener('click', () => {
+  loggedIn = true;
+  alert('Login berhasil!');
+  document.getElementById('auth-screen').classList.add('hidden');
+});
+document.getElementById('register-btn').addEventListener('click', () => {
+  loggedIn = true;
+  alert('Pendaftaran berhasil!');
+  document.getElementById('auth-screen').classList.add('hidden');
+});
+document.getElementById('add-question-btn').addEventListener('click', () => {
+  if (loggedIn) {
+    document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('add-question-screen').classList.remove('hidden');
+  } else {
+    alert('Login dulu untuk menambahkan pertanyaan!');
+  }
+});
+document.getElementById('save-question-btn').addEventListener('click', () => {
+  const q = document.getElementById('new-question').value;
+  const o1 = document.getElementById('new-option1').value;
+  const o2 = document.getElementById('new-option2').value;
+  const o3 = document.getElementById('new-option3').value;
+  const o4 = document.getElementById('new-option4').value;
+  const ans = document.getElementById('new-answer').value;
+
+  if (q && o1 && o2 && o3 && o4 && ans) {
+    questions.push({
+      question: q,
+      options: [o1, o2, o3, o4],
+      answer: ans
+    });
+    alert('Pertanyaan berhasil ditambahkan!');
+    location.reload();
+  } else {
+    alert('Lengkapi semua kolom!');
+  }
+});
+
+function startQuiz() {
+  playerName = nameInput.value.trim();
+  if (!playerName) {
+    alert('Masukkan nama dulu!');
+    return;
+  }
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  playerNameElement.textContent = `Selamat Datang, ${playerName}!`;
+  showQuestion();
+}
+
+function showQuestion() {
+  resetState();
+  const currentQuestion = questions[currentQuestionIndex];
+  questionContainer.textContent = currentQuestion.question;
+  currentQuestion.options.forEach(option => {
+    const button = document.createElement('button');
+    button.textContent = option;
+    button.addEventListener('click', () => selectAnswer(option, button));
+    optionsContainer.appendChild(button);
+  });
+  timeLeft = 10;
+  timerElement.textContent = timeLeft;
+  timer = setInterval(updateTimer, 1000);
+}
+
+function resetState() {
+  clearInterval(timer);
+  optionsContainer.innerHTML = '';
+}
+
+function updateTimer() {
+  timeLeft--;
+  timerElement.textContent = timeLeft;
+  if (timeLeft === 0) {
+    nextQuestion();
+  }
+}
+
+function selectAnswer(selectedOption, button) {
+  clickSound.play();
+  [...optionsContainer.children].forEach(btn => btn.disabled = true);
+  button.classList.add("selected");
+  const currentQuestion = questions[currentQuestionIndex];
+  if (selectedOption === currentQuestion.answer) {
+    score += 10;
+  }
+  setTimeout(nextQuestion, 800);
+}
+
+function nextQuestion() {
+  currentQuestionIndex++;
+  if (currentQuestionIndex < 10) {
+    showQuestion();
+  } else {
+    endQuiz();
+  }
+}
+
+function endQuiz() {
+  clearInterval(timer);
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('end-screen').classList.remove('hidden');
+  finalScore.textContent = `${playerName}, Skor Anda: ${score} / 100`;
+}
+</script>
+
+</body>
+</html>
